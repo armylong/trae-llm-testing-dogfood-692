@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>氧分系统测试</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .header {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .header h1 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+        .uid-input {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .uid-input label {
+            font-weight: bold;
+            color: #555;
+        }
+        .uid-input input {
+            padding: 10px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            width: 200px;
+            transition: border-color 0.3s;
+        }
+        .uid-input input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .balance-display {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            font-size: 18px;
+            margin-left: auto;
+        }
+        .main-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .card h2 {
+            color: #333;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #eee;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 500;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 10px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .btn {
+            width: 100%;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+        .btn:active {
+            transform: translateY(0);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .btn-success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+        }
+        .btn-warning {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+        .btn-info {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+        .btn-secondary {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            color: #333;
+        }
+        .transactions {
+            grid-column: 1 / -1;
+        }
+        .transaction-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .transaction-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+            transition: background 0.2s;
+        }
+        .transaction-item:hover {
+            background: #f8f9fa;
+        }
+        .transaction-item:last-child {
+            border-bottom: none;
+        }
+        .transaction-info {
+            flex: 1;
+        }
+        .transaction-type {
+            font-weight: bold;
+            color: #333;
+        }
+        .transaction-desc {
+            font-size: 12px;
+            color: #888;
+            margin-top: 3px;
+        }
+        .transaction-amount {
+            font-weight: bold;
+            font-size: 18px;
+        }
+        .amount-positive {
+            color: #38ef7d;
+        }
+        .amount-negative {
+            color: #f5576c;
+        }
+        .transaction-time {
+            font-size: 12px;
+            color: #aaa;
+            margin-left: 10px;
+        }
+        .refund-btn {
+            padding: 5px 10px;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+        .result-panel {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            background: #f8f9fa;
+            font-family: monospace;
+            font-size: 13px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .result-success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .result-error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #888;
+        }
+        .quick-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+        .quick-btn {
+            padding: 8px 15px;
+            font-size: 13px;
+            flex: 1;
+            min-width: 80px;
+        }
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .modal-box {
+            background: white;
+            padding: 30px 40px;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+        .modal-box h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .modal-box input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+        .modal-box input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .uid-display {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="modal-overlay" id="uidModal">
+        <div class="modal-box">
+            <h2>🫁 欢迎使用氧分系统</h2>
+            <p style="margin-bottom: 15px; color: #666;">请输入您的用户ID以继续</p>
+            <input type="text" id="modalUidInput" placeholder="请输入用户ID">
+            <button class="btn btn-primary" onclick="confirmUid()">确认</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h1>🫁 氧分系统</h1>
+            <div class="uid-input">
+                <div class="uid-display">
+                    用户ID: <span id="uidDisplay">-</span>
+                </div>
+                <div class="balance-display">
+                    当前余额: <span id="currentBalance">-</span> 氧分
+                </div>
+                <button class="btn btn-warning" onclick="clearData()" style="margin-left: 10px; padding: 8px 15px; font-size: 14px;">清除数据</button>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="card">
+                <h2>💰 充值</h2>
+                <div class="form-group">
+                    <label>充值金额</label>
+                    <input type="number" id="rechargeAmount" placeholder="输入充值金额" min="1">
+                </div>
+                <div class="form-group">
+                    <label>过期时间(秒)</label>
+                    <input type="number" id="expireSec" placeholder="过期秒数" value="86400">
+                </div>
+                <button class="btn btn-success" onclick="recharge()">充值</button>
+                <div class="quick-actions">
+                    <button class="btn quick-btn btn-secondary" onclick="quickRecharge(50)">+50</button>
+                    <button class="btn quick-btn btn-secondary" onclick="quickRecharge(100)">+100</button>
+                    <button class="btn quick-btn btn-secondary" onclick="quickRecharge(500)">+500</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>🛒 消费</h2>
+                <div class="form-group">
+                    <label>消费金额</label>
+                    <input type="number" id="consumeAmount" placeholder="输入消费金额" min="1">
+                </div>
+                <button class="btn btn-warning" onclick="consume()">消费</button>
+                <div class="quick-actions">
+                    <button class="btn quick-btn btn-secondary" onclick="quickConsume(10)">-10</button>
+                    <button class="btn quick-btn btn-secondary" onclick="quickConsume(50)">-50</button>
+                    <button class="btn quick-btn btn-secondary" onclick="quickConsume(100)">-100</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>🔄 转账</h2>
+                <div class="form-group">
+                    <label>目标用户ID</label>
+                    <input type="text" id="toUid" placeholder="输入目标用户ID">
+                </div>
+                <div class="form-group">
+                    <label>转账金额</label>
+                    <input type="number" id="transferAmount" placeholder="输入转账金额" min="1">
+                </div>
+                <button class="btn btn-info" onclick="transfer()">转账</button>
+            </div>
+
+            <div class="card">
+                <h2>🔙 退款</h2>
+                <div class="form-group">
+                    <label>交易号</label>
+                    <input type="text" id="transactionId" placeholder="输入要退款的交易号">
+                </div>
+                <button class="btn btn-primary" onclick="refund()">退款</button>
+                <p style="margin-top: 10px; font-size: 12px; color: #888;">
+                    提示: 只能退款消费类型的交易,在下方交易记录中点击退款按钮可快速操作
+                </p>
+            </div>
+
+            <div class="card transactions">
+                <h2>📋 交易记录</h2>
+                <div class="transaction-list" id="transactionList">
+                    <div class="empty-state">暂无交易记录</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="result-panel" id="resultPanel" style="display: none;"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost/yangfen';
+        let currentUid = '';
+
+        function confirmUid() {
+            const uid = document.getElementById('modalUidInput').value.trim();
+            if (!uid) {
+                alert('请输入用户ID');
+                return;
+            }
+            currentUid = uid;
+            document.getElementById('uidDisplay').textContent = uid;
+            document.getElementById('uidModal').classList.add('hidden');
+            refreshBalance();
+            refreshTransactions();
+        }
+
+        document.getElementById('modalUidInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                confirmUid();
+            }
+        });
+
+        function getUid() {
+            return currentUid;
+        }
+
+        function showResult(data, isError = false) {
+            const panel = document.getElementById('resultPanel');
+            panel.style.display = 'block';
+            panel.className = 'result-panel ' + (isError ? 'result-error' : 'result-success');
+            panel.textContent = JSON.stringify(data, null, 2);
+        }
+
+        async function apiCall(action, params = {}) {
+            const uid = getUid();
+            if (!uid) {
+                showResult({ error: '请输入用户ID' }, true);
+                return null;
+            }
+
+            const url = `${API_BASE}/${action}?uid=${encodeURIComponent(uid)}`;
+            
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ uid, ...params })
+                });
+                
+                const data = await response.json();
+                showResult(data, data.errorCode !== 0 && data.errorCode !== undefined);
+                return data;
+            } catch (error) {
+                showResult({ error: error.message }, true);
+                return null;
+            }
+        }
+
+        async function refreshBalance() {
+            const uid = getUid();
+            if (!uid) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/getBalance?uid=${encodeURIComponent(uid)}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ uid })
+                });
+                const data = await response.json();
+                if (data.responseData) {
+                    document.getElementById('currentBalance').textContent = data.responseData.balance;
+                }
+            } catch (error) {
+                console.error('获取余额失败:', error);
+            }
+        }
+
+        async function refreshTransactions() {
+            const uid = getUid();
+            if (!uid) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/getTransactions?uid=${encodeURIComponent(uid)}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ uid })
+                });
+                const data = await response.json();
+                
+                const list = document.getElementById('transactionList');
+                if (data.responseData && data.responseData.list && data.responseData.list.length > 0) {
+                    list.innerHTML = data.responseData.list.map(t => {
+                        const isConsume = t.type === 'consume';
+                        const isRefund = t.type === 'refund';
+                        const amountClass = (t.type === 'recharge' || t.type === 'refund' || t.type === 'transfer_in') ? 'amount-positive' : 'amount-negative';
+                        const typeMap = {
+                            'recharge': '充值',
+                            'consume': '消费',
+                            'transfer_out': '转出',
+                            'transfer_in': '转入',
+                            'refund': '退款'
+                        };
+                        const time = new Date(t.createdAt * 1000).toLocaleString();
+                        const refundBtn = isConsume ? 
+                            `<button class="btn refund-btn btn-primary" onclick="quickRefund('${t.id}')">退款</button>` : '';
+                        
+                        return `
+                            <div class="transaction-item">
+                                <div class="transaction-info">
+                                    <div class="transaction-type">${typeMap[t.type] || t.type}</div>
+                                    <div class="transaction-desc">${t.description}</div>
+                                </div>
+                                <div class="transaction-amount ${amountClass}">
+                                    ${t.type === 'transfer_out' || t.type === 'consume' ? '-' : '+'}${t.amount}
+                                </div>
+                                <div class="transaction-time">${time}</div>
+                                ${refundBtn}
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    list.innerHTML = '<div class="empty-state">暂无交易记录</div>';
+                }
+            } catch (error) {
+                console.error('获取交易记录失败:', error);
+            }
+        }
+
+        async function recharge() {
+            const amount = parseInt(document.getElementById('rechargeAmount').value);
+            if (!amount || amount <= 0) {
+                showResult({ error: '请输入有效的充值金额' }, true);
+                return;
+            }
+            const expireSec = parseInt(document.getElementById('expireSec').value) || 86400;
+            await apiCall('recharge', { amount, expire_sec: expireSec });
+            document.getElementById('rechargeAmount').value = '';
+            refreshBalance();
+            refreshTransactions();
+        }
+
+        function quickRecharge(amount) {
+            document.getElementById('rechargeAmount').value = amount;
+            recharge();
+        }
+
+        async function consume() {
+            const amount = parseInt(document.getElementById('consumeAmount').value);
+            if (!amount || amount <= 0) {
+                showResult({ error: '请输入有效的消费金额' }, true);
+                return;
+            }
+            await apiCall('consume', { amount });
+            document.getElementById('consumeAmount').value = '';
+            refreshBalance();
+            refreshTransactions();
+        }
+
+        function quickConsume(amount) {
+            document.getElementById('consumeAmount').value = amount;
+            consume();
+        }
+
+        async function transfer() {
+            const toUid = document.getElementById('toUid').value.trim();
+            const amount = parseInt(document.getElementById('transferAmount').value);
+            
+            if (!toUid) {
+                showResult({ error: '请输入目标用户ID' }, true);
+                return;
+            }
+            if (!amount || amount <= 0) {
+                showResult({ error: '请输入有效的转账金额' }, true);
+                return;
+            }
+            
+            await apiCall('transfer', { toUid, amount });
+            document.getElementById('toUid').value = '';
+            document.getElementById('transferAmount').value = '';
+            refreshBalance();
+            refreshTransactions();
+        }
+
+        async function refund() {
+            const transactionId = document.getElementById('transactionId').value.trim();
+            if (!transactionId) {
+                showResult({ error: '请输入交易号' }, true);
+                return;
+            }
+            await apiCall('refund', { transactionId });
+            document.getElementById('transactionId').value = '';
+            refreshBalance();
+            refreshTransactions();
+        }
+
+        function quickRefund(transactionId) {
+            document.getElementById('transactionId').value = transactionId;
+            refund();
+        }
+
+        async function clearData() {
+            if (!confirm('确定要清除当前用户的所有数据吗？')) {
+                return;
+            }
+            await apiCall('clearData', {});
+            refreshBalance();
+            refreshTransactions();
+        }
+    </script>
+</body>
+</html>

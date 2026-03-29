@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>系统异常</title>
+    <meta charset=utf-8>
+    <meta http-equiv=X-UA-Compatible content="IE=edge,chrome=1">
+    <meta name=renderer content=webkit>
+    <meta name=viewport content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+    <style>
+        .error {
+            border: 1px solid #ff4646;
+            background-color: #ffdfdf;
+            border-radius: 4px;
+            max-width:400px;
+            margin: 10% auto;
+            text-align: center;
+        }
+        .error .text {
+            color: red;
+            text-align: center;
+            font-size: 14px;
+        }
+        .error a {
+            text-decoration: underline;
+            font-size: 14px;
+            color: blue;
+        }
+    </style>
+</head>
+<body>
+<div class="error">
+    <p class="text">{{ .error }}</p>
+    <p>
+        <a href="javascript:void(0);" id="logout">点此退出登录</a>
+    </p>
+</div>
+<script>
+    document.querySelector("#logout").addEventListener("click", async function (){
+        let resp = await (await fetch("/_/auth/logout", {
+            "headers": {
+                "content-type": "application/json;charset=UTF-8"
+            },
+            "method": "POST"
+        })).json();
+        console.log(resp)
+        location.href = resp.responseData.redirect_url
+    }, false)
+</script>
+</body>
+</html>
